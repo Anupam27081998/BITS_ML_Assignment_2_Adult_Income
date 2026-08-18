@@ -33,12 +33,8 @@ The objective of this project is to predict whether a person's annual income is 
 
 ## Model Comparison Table
 
-Model	Accuracy	AUC	Precision	Recall	F1	MCC
-Logistic Regression	0.8446	0.9013	0.7333	0.5861	0.6515	0.5588
-Decision Tree	0.8482	0.8987	0.782	0.5375	0.6371	0.5605
-kNN	0.8329	0.8749	0.6847	0.6044	0.642	0.5354
-Naive Bayes	0.6035	0.845	0.3781	0.93	0.5376	0.377
-Random Forest	0.8493	0.9029	0.731	0.6204	0.6712	0.5775
+<img width="449" height="121" alt="image" src="https://github.com/user-attachments/assets/1526a7ff-2d2b-4f7d-a426-888def5aba56" />
+
 
 
 
