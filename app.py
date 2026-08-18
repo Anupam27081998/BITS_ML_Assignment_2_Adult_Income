@@ -1,8 +1,17 @@
-
 import streamlit as st
 import pandas as pd
-import pickle
-import os
+import numpy as np
+
+from sklearn.model_selection import train_test_split
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.pipeline import Pipeline
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.ensemble import RandomForestClassifier
 
 from sklearn.metrics import (
     accuracy_score,
@@ -24,62 +33,143 @@ st.title("Machine Learning Assignment 2")
 st.subheader("Adult Income Classification using Machine Learning")
 
 st.write(
-    "This Streamlit application predicts whether annual income is above 50K using the Adult Income Dataset."
-)
-
-model_options = {
-    "Logistic Regression": "models/logistic_regression.pkl",
-    "Decision Tree": "models/decision_tree.pkl",
-    "kNN": "models/knn.pkl",
-    "Naive Bayes": "models/naive_bayes.pkl",
-    "Random Forest": "models/random_forest.pkl"
-}
-
-selected_model = st.selectbox(
-    "Select Machine Learning Model",
-    list(model_options.keys())
+    "This Streamlit application predicts whether a person's income is above 50K using the Adult Income Dataset."
 )
 
 uploaded_file = st.file_uploader(
-    "Upload test_data.csv file",
+    "Upload Adult Income CSV Dataset",
     type=["csv"]
 )
 
 if uploaded_file is not None:
-    data = pd.read_csv(uploaded_file)
-    st.success("File uploaded successfully")
+    df = pd.read_csv(uploaded_file)
+    st.success("Dataset uploaded successfully")
 else:
-    if os.path.exists("test_data.csv"):
-        data = pd.read_csv("test_data.csv")
-        st.info("Using default test_data.csv from repository")
-    else:
-        st.warning("Please upload test_data.csv")
-        st.stop()
+    df = pd.read_csv("adult_income_dataset.csv")
+    st.info("Using default adult_income_dataset.csv from repository")
 
 st.write("Dataset Preview")
-st.dataframe(
-    data.head(),
-    use_container_width=True
-)
+st.dataframe(df.head(), use_container_width=True)
 
-if "income" not in data.columns:
-    st.error("The uploaded file must contain the target column named income")
+if "income" not in df.columns:
+    st.error("The dataset must contain the target column named income")
     st.stop()
 
-X_test = data.drop(
-    "income",
-    axis=1
+df = df.dropna()
+
+if df["income"].dtype == "object":
+    df["income"] = df["income"].map({
+        "<=50K": 0,
+        ">50K": 1,
+        "<=50K.": 0,
+        ">50K.": 1
+    })
+
+if "race" in df.columns:
+    df = df.drop(columns=["race"])
+
+if "sex" in df.columns:
+    df = df.drop(columns=["sex"])
+
+X = df.drop("income", axis=1)
+y = df["income"]
+
+numerical_columns = X.select_dtypes(
+    include=["int64", "float64"]
+).columns.tolist()
+
+categorical_columns = X.select_dtypes(
+    include=["object"]
+).columns.tolist()
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.20,
+    random_state=42,
+    stratify=y
 )
 
-y_test = data["income"]
+try:
+    encoder = OneHotEncoder(
+        handle_unknown="ignore",
+        sparse_output=False
+    )
+except TypeError:
+    encoder = OneHotEncoder(
+        handle_unknown="ignore",
+        sparse=False
+    )
 
-model_path = model_options[selected_model]
+preprocessor = ColumnTransformer(
+    transformers=[
+        (
+            "num",
+            StandardScaler(),
+            numerical_columns
+        ),
+        (
+            "cat",
+            encoder,
+            categorical_columns
+        )
+    ]
+)
 
-with open(
-    model_path,
-    "rb"
-) as file:
-    model = pickle.load(file)
+model_name = st.selectbox(
+    "Select Machine Learning Model",
+    [
+        "Logistic Regression",
+        "Decision Tree",
+        "kNN",
+        "Naive Bayes",
+        "Random Forest"
+    ]
+)
+
+if model_name == "Logistic Regression":
+    classifier = LogisticRegression(
+        max_iter=1000,
+        solver="liblinear"
+    )
+
+elif model_name == "Decision Tree":
+    classifier = DecisionTreeClassifier(
+        random_state=42,
+        max_depth=10
+    )
+
+elif model_name == "kNN":
+    classifier = KNeighborsClassifier(
+        n_neighbors=7
+    )
+
+elif model_name == "Naive Bayes":
+    classifier = GaussianNB()
+
+else:
+    classifier = RandomForestClassifier(
+        n_estimators=100,
+        random_state=42
+    )
+
+model = Pipeline(
+    steps=[
+        (
+            "preprocessor",
+            preprocessor
+        ),
+        (
+            "classifier",
+            classifier
+        )
+    ]
+)
+
+model.fit(
+    X_train,
+    y_train
+)
 
 y_pred = model.predict(
     X_test
@@ -153,7 +243,8 @@ st.dataframe(
     use_container_width=True
 )
 
-prediction_output = data.copy()
+prediction_output = X_test.copy()
+prediction_output["Actual Income Class"] = y_test.values
 prediction_output["Predicted Income Class"] = y_pred
 
 st.write("Prediction Output")
