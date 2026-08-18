@@ -39,7 +39,7 @@ Decision Tree	0.8482	0.8987	0.782	0.5375	0.6371	0.5605
 kNN	0.8329	0.8749	0.6847	0.6044	0.642	0.5354
 Naive Bayes	0.6035	0.845	0.3781	0.93	0.5376	0.377
 Random Forest	0.8493	0.9029	0.731	0.6204	0.6712	0.5775
-<img width="449" height="121" alt="image" src="https://github.com/user-attachments/assets/cfc3c5ad-8944-4734-a5fb-147332b28766" />
+
 
 
 ## Model Performance Observations
