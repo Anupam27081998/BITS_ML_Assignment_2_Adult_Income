@@ -17,11 +17,11 @@ The objective of this project is to predict whether a person's annual income is 
 
 ## GitHub Repository Link
 
-(Add your repository URL here)
+(https://github.com/Anupam27081998/BITS_ML_Assignment_2_Adult_Income/blob/main/README.md)
 
 ## Live Streamlit App Link
 
-(Add your Streamlit URL here)
+https://bitsmlassignment2adultincome-fm4pqckyeoze4c3nrt8muj.streamlit.app/
 
 ## Models Used
 
